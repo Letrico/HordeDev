@@ -20,13 +20,11 @@ local enums = {
         portal_door = vec3:new(28.782243728638, -479.67123413086, -24.51171875) 
     },
     chest_types = {
-        [0] = "BSK_UniqueOpChest_Gear",
         [1] = "BSK_UniqueOpChest_Materials",
         [2] = "BSK_UniqueOpChest_Gold",
         [3] = "BSK_UniqueOpChest_GreaterAffix"
     },
     chest_types = {
-        GEAR = "BSK_UniqueOpChest_Gear",
         MATERIALS = "BSK_UniqueOpChest_Materials",
         GOLD = "BSK_UniqueOpChest_Gold",
         GREATER_AFFIX = "BSK_UniqueOpChest_GreaterAffix"

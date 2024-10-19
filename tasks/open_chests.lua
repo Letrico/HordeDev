@@ -16,6 +16,7 @@ local chest_state = {
     MOVING_TO_CHEST = "MOVING_TO_CHEST",
     OPENING_CHEST = "OPENING_CHEST",
     WAITING_FOR_VFX = "WAITING_FOR_VFX",
+    WAITING_FOR_LOOT = "WAITING_FOR_LOOT",
     FINISHED = "FINISHED",
     PAUSED_FOR_SALVAGE = "PAUSED_FOR_SALVAGE",
 }
@@ -29,7 +30,7 @@ local open_chests_task = {
     current_chest_index = nil,
     failed_attempts = 0,
     current_chest_index = nil,
-    max_attempts = 3,
+    max_attempts = 15,
     state_before_pause = nil,
     
     shouldExecute = function()
@@ -76,11 +77,13 @@ local open_chests_task = {
             self:open_chest()
         elseif self.current_state == chest_state.WAITING_FOR_VFX then
             self:wait_for_vfx()
+        elseif self.current_state == chest_state.WAITING_FOR_LOOT then
+            self:wait_for_loot()
         end
     end,
 
     return_from_salvage = function(self)
-        if not tracker.check_time("salvage_return_time", 3) then
+        if not tracker.check_time("salvage_return_time", 6) then
             console.print("Waiting before resuming chest opening")
             return
         end
@@ -116,7 +119,7 @@ local open_chests_task = {
         console.print("settings.selected_chest_type: " .. tostring(settings.selected_chest_type))
     
         -- Always set self.selected_chest_type
-        local chest_type_map = {"GEAR", "MATERIALS", "GOLD"}
+        local chest_type_map = {"MATERIALS", "GOLD"}
         self.selected_chest_type = chest_type_map[settings.selected_chest_type + 1]
     
         -- If no aether, proceed with chest selection
@@ -175,7 +178,7 @@ local open_chests_task = {
         console.print("Selecting chest")
         console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
         console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
-        local chest_type_map = {"GEAR", "MATERIALS", "GOLD"}
+        local chest_type_map = {"MATERIALS", "GOLD"}
         self.selected_chest_type = chest_type_map[settings.selected_chest_type + 1]
         console.print("New self.selected_chest_type: " .. tostring(self.selected_chest_type))
         if not tracker.ga_chest_opened and settings.always_open_ga_chest and utils.get_chest(enums.chest_types["GREATER_AFFIX"]) then
@@ -199,7 +202,7 @@ local open_chests_task = {
         
         if chest then
             self.chest_not_found_attempts = 0 -- Reset the counter when chest is found
-            if utils.distance_to(chest) > 2 then
+            if utils.distance_to(chest) > 1.5 then
                 if tracker.check_time("request_move_to_chest", 0.15) then
                     console.print(string.format("Moving to %s chest", self.current_chest_type))
                     explorer:set_custom_target(chest:get_position())
@@ -231,12 +234,12 @@ local open_chests_task = {
 
     open_chest = function(self)
         if tracker.check_time("chest_opening_time", settings.open_chest_delay) then
-            -- Add check for GEAR chest type and full inventory
+            -- Add check for GREATER_AFFIX chest type and full inventory
             console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
             console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
             local failover_chest_type_map = {"MATERIALS", "GOLD"}
-            if not settings.salvage and (self.current_chest_type == "GEAR" or self.current_chest_type == "GREATER_AFFIX") and utils.is_inventory_full() then
-                console.print("Selected chest is GEAR and inventory is full, switching to failover chest type")
+            if not settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
+                console.print("Selected chest is GREATER_AFFIX and inventory is full, switching to failover chest type")
                 self.selected_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
                 self.current_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
                 self.current_state = chest_state.MOVING_TO_CHEST
@@ -291,30 +294,24 @@ local open_chests_task = {
     end,
 
     try_next_chest = function(self, was_successful)
-        if self.current_chest_type == "GREATER_AFFIX" then
-            console.print("Wait for awhile after opening GA chest to loot")
-            if not tracker.check_time("open_ga_chest_delay", settings.open_ga_chest_delay) then
-                return
-            end
-        end
         console.print("Trying next chest")
         console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
         console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
 
-        -- Add check for GEAR chest type and full inventory
+        -- Add check for GREATER_AFFIX chest type and full inventory
         local failover_chest_type_map = {"MATERIALS", "GOLD"}
-        if not settings.salvage and (self.current_chest_type == "GEAR" or self.current_chest_type == "GREATER_AFFIX") and utils.is_inventory_full() then
-            console.print("Selected chest is GEAR and inventory is full, switching to failover chest type")
+        if not settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
+            console.print("Selected chest is GREATER_AFFIX and inventory is full, switching to failover chest type")
             self.selected_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
             self.current_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
             self.current_state = chest_state.MOVING_TO_CHEST
             return
-        elseif settings.salvage and (self.current_chest_type == "GEAR" or self.current_chest_type == "GREATER_AFFIX") and utils.is_inventory_full() then
+        elseif settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
             self.state_before_pause = self.current_state
             self.current_state = chest_state.PAUSED_FOR_SALVAGE
             return
         end
-    
+
         local function move_to_next_chest()
             self.current_chest_index = (self.current_chest_index or 0) + 1
             if self.current_chest_index <= #chest_order then
@@ -328,7 +325,7 @@ local open_chests_task = {
             end
             return false
         end
-    
+
         if not was_successful or self.current_chest_type ~= self.selected_chest_type then
             if not move_to_next_chest() then
                 console.print("All chest types exhausted, finishing task")
@@ -336,16 +333,28 @@ local open_chests_task = {
                 return
             end
         end
-    
+
         if self.current_chest_type == "GREATER_AFFIX" then
             tracker.ga_chest_opened = true
         elseif self.current_chest_type == self.selected_chest_type then
             tracker.selected_chest_opened = true
         end
-    
+
+        self.current_state = chest_state.WAITING_FOR_LOOT
+        self.failed_attempts = 0
+    end,
+
+    wait_for_loot = function(self)
+        if (self.current_chest_type == "GREATER_AFFIX" and tracker.ga_chest_opened) or
+                (self.current_chest_type == self.selected_chest_type and tracker.selected_chest_opened)  then
+            console.print("Waiting loot based on wait loot delay.")
+            if not tracker.check_time("wait_for_loot_delay", settings.wait_loot_delay) then
+                return false
+            end
+        end
+        
         console.print("Next chest type set to: " .. self.current_chest_type)
         self.current_state = chest_state.MOVING_TO_CHEST
-        self.failed_attempts = 0
     end,
 
     finish_chest_opening = function(self)

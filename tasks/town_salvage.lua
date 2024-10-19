@@ -291,7 +291,6 @@ local town_salvage_task = {
             elseif current_time - self.portal_interact_time < 2 then
                 console.print("Interacting with the portal.")
                 interact_object(portal)
-                self:reset()
             elseif current_time - self.portal_interact_time < 5 then
                 console.print(string.format("Waiting at portal... Time elapsed: %.2f seconds", current_time - self.portal_interact_time))
             else

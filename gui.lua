@@ -1,5 +1,5 @@
 local gui = {}
-local plugin_label = "Infernal Horde - Dev Edition"
+local plugin_label = "Infernal Horde - Letrico Edition"
 
 local function create_checkbox(key)
     return checkbox:new(false, get_hash(plugin_label .. "_" .. key))
@@ -7,13 +7,11 @@ end
 
 -- Add chest types enum
 gui.chest_types_enum = {
-    GEAR = 0,
-    MATERIALS = 1,
-    GOLD = 2,
+    MATERIALS = 0,
+    GOLD = 1,
 }
 
 gui.chest_types_options = {
-    "Gear",
     "Materials",
     "Gold",
 }
@@ -37,8 +35,9 @@ gui.elements = {
     always_open_ga_chest = create_checkbox("always_open_ga_chest"),
     loot_mothers_gift = create_checkbox("loot_mothers_gift"),
     merry_go_round = checkbox:new(true, get_hash("merry_go_round")),
-    open_ga_chest_delay = slider_float:new(1.5, 6.0, 3.0, get_hash("open_ga_chest_delay")), -- 3.0 is the default value
-    open_chest_delay = slider_float:new(1.0, 3.0, 1.5, get_hash("open_chest_delay")), -- 1.0 is the default value
+    open_ga_chest_delay = slider_float:new(3, 30.0, 12.0, get_hash("open_ga_chest_delay")), -- 12.0 is the default value
+    open_chest_delay = slider_float:new(1.0, 3.0, 1.5, get_hash("open_chest_delay")), -- 12.0 is the default value
+    wait_loot_delay = slider_int:new(1, 20, 10, get_hash("wait_loot_delay")), -- 10 is a default value
     boss_kill_delay = slider_int:new(1, 10, 6, get_hash("boss_kill_delay")), -- 6 is a default value
     chest_move_attempts = slider_int:new(20, 400, 40, get_hash("chest_move_attempts")), -- 20 is a default value
     use_salvage_filter_toggle = checkbox:new(false, get_hash("use_salvage_filter_toggle")),
@@ -49,7 +48,7 @@ gui.elements = {
 }
 
 function gui.render()
-    if not gui.elements.main_tree:push("Infernal Horde - Dev Edition") then return end
+    if not gui.elements.main_tree:push("Infernal Horde - Letrico Edition") then return end
 
     gui.elements.main_toggle:render("Enable", "Enable the bot")
     
@@ -82,6 +81,7 @@ function gui.render()
         gui.elements.merry_go_round:render("Circle arena when wave completes", "Toggle to circle arene when wave completes to pick up stray Aethers")
         gui.elements.open_ga_chest_delay:render("GA Chest open delay", "Adjust delay for the chest opening (1.0-3.0)", 1)
         gui.elements.open_chest_delay:render("Chest open delay", "Adjust delay for the chest opening (1.0-3.0)", 1)
+        gui.elements.wait_loot_delay:render("Wait loot delay", "Adjust delay for the waiting loot (12)", 1)
         gui.elements.boss_kill_delay:render("Boss kill delay", "Adjust delay after killing boss (1-10)")
         gui.elements.chest_move_attempts:render("Chest move attempts", "Adjust the amount of times it tries to reach a chest (20-400)")
         
