@@ -202,7 +202,7 @@ local open_chests_task = {
         
         if chest then
             self.chest_not_found_attempts = 0 -- Reset the counter when chest is found
-            if utils.distance_to(chest) > 1.5 then
+            if utils.distance_to(chest) > 2 then
                 if tracker.check_time("request_move_to_chest", 0.15) then
                     console.print(string.format("Moving to %s chest", self.current_chest_type))
                     explorer:set_custom_target(chest:get_position())
