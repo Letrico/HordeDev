@@ -21,7 +21,7 @@ local chest_state = {
     PAUSED_FOR_SALVAGE = "PAUSED_FOR_SALVAGE",
 }
 
-local chest_order = {"GREATER_AFFIX", "SELECTED", "GOLD"}
+local chest_order = {"GREATER_AFFIX", "SELECTED"}
 
 local open_chests_task = {
     name = "Open Chests",
