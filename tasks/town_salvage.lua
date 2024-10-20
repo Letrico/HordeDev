@@ -17,7 +17,7 @@ local salvage_state = {
     FINISHED = "FINISHED",
 }
 
-local function salvage_low_greater_affix_items()
+local function salvage_low_greater_affix_items_with_filter()
     local local_player = get_local_player()
     if not local_player then
         return
@@ -75,6 +75,26 @@ local function salvage_low_greater_affix_items()
             end
         end
         ::continue::
+    end
+end
+
+local function salvage_low_greater_affix_items()
+    local local_player = get_local_player()
+    if not local_player then
+        return
+    end
+
+    local inventory_items = local_player:get_inventory_items()
+    for _, inventory_item in pairs(inventory_items) do
+        if inventory_item and not inventory_item:is_locked() then
+            local display_name = inventory_item:get_display_name()
+            local greater_affix_count = utils.get_greater_affix_count(display_name)
+            local item_id = inventory_item:get_sno_id()
+
+            if greater_affix_count < settings.greater_affix_count and not is_uber_item(item_id) then
+                loot_manager.salvage_specific_item(inventory_item)
+            end
+        end
     end
 end
 
@@ -234,11 +254,11 @@ local town_salvage_task = {
             if not self.last_salvage_time then
                 if settings.use_salvage_filter_toggle then
                     console.print("Salvaging items with filter logic")
-                    salvage_low_greater_affix_items()
+                    salvage_low_greater_affix_items_with_filter()
                     self.last_salvage_time = current_time
                 else
-                    console.print("Salvaging all items")
-                    loot_manager.salvage_all_items()
+                    console.print("Salvaging items with general GA logic")
+                    salvage_low_greater_affix_items()
                     self.last_salvage_time = current_time
                 end
                 console.print("Salvage action performed, waiting 2 seconds before checking results")
