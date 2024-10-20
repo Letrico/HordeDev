@@ -3,6 +3,7 @@ local settings = require "core.settings"
 local enums = require "data.enums"
 local tracker = require "core.tracker"
 local explorer = require "core.explorer"
+local town_salvage_task = require "tasks.town_salvage"
 
 -- Reference the position from horde.lua
 local horde_boss_room_position = vec3:new(-36.17675, -36.3222, 2.200)
@@ -29,7 +30,6 @@ local open_chests_task = {
     current_chest_type = nil,
     current_chest_index = nil,
     failed_attempts = 0,
-    current_chest_index = nil,
     max_attempts = 15,
     state_before_pause = nil,
     
@@ -87,6 +87,7 @@ local open_chests_task = {
             console.print("Waiting before resuming chest opening")
             return
         end
+        town_salvage_task:reset()
         console.print("Resume chest opening")
         tracker.salvage_return_time = nil
         tracker.has_salvaged = false
@@ -299,18 +300,18 @@ local open_chests_task = {
         console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
 
         -- Add check for GREATER_AFFIX chest type and full inventory
-        local failover_chest_type_map = {"MATERIALS", "GOLD"}
-        if not settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
-            console.print("Selected chest is GREATER_AFFIX and inventory is full, switching to failover chest type")
-            self.selected_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
-            self.current_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
-            self.current_state = chest_state.MOVING_TO_CHEST
-            return
-        elseif settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
-            self.state_before_pause = self.current_state
-            self.current_state = chest_state.PAUSED_FOR_SALVAGE
-            return
-        end
+        -- local failover_chest_type_map = {"MATERIALS", "GOLD"}
+        -- if not settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
+        --     console.print("Selected chest is GREATER_AFFIX and inventory is full, switching to failover chest type")
+        --     self.selected_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
+        --     self.current_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
+        --     self.current_state = chest_state.MOVING_TO_CHEST
+        --     return
+        -- elseif settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
+        --     self.state_before_pause = self.current_state
+        --     self.current_state = chest_state.PAUSED_FOR_SALVAGE
+        --     return
+        -- end
 
         local function move_to_next_chest()
             self.current_chest_index = (self.current_chest_index or 0) + 1
