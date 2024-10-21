@@ -349,10 +349,14 @@ local open_chests_task = {
         console.print("waiting for loot")
         console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
         console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
-        if (self.current_chest_type == "GREATER_AFFIX" and tracker.ga_chest_opened) or
-                (self.current_chest_type == self.selected_chest_type and tracker.selected_chest_opened)  then
-            console.print("Waiting loot based on wait loot delay.")
+        if self.current_chest_type == "GREATER_AFFIX" and tracker.ga_chest_opened then
+            console.print("Waiting GA loot based on wait loot delay.")
             if not tracker.check_time("wait_for_loot_delay", settings.wait_loot_delay) then
+                return false
+            end
+        elseif self.current_chest_type == self.selected_chest_type and tracker.selected_chest_opened then
+            console.print("Waiting normal loot based on wait loot delay.")
+            if not tracker.check_time("wait_for_loot_delay", (settings.wait_loot_delay / 2)) then
                 return false
             end
         end
