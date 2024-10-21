@@ -327,18 +327,21 @@ local open_chests_task = {
             return false
         end
 
+        if was_successful then
+            if self.current_chest_type == "GREATER_AFFIX" then
+                tracker.ga_chest_opened = true
+            elseif self.current_chest_type == self.selected_chest_type then
+                tracker.selected_chest_opened = true
+            end
+        end
+
         if not was_successful or self.current_chest_type ~= self.selected_chest_type then
+            console.print("should open next chest")
             if not move_to_next_chest() then
                 console.print("All chest types exhausted, finishing task")
                 self.current_state = chest_state.FINISHED
                 return
             end
-        end
-
-        if self.current_chest_type == "GREATER_AFFIX" then
-            tracker.ga_chest_opened = true
-        elseif self.current_chest_type == self.selected_chest_type then
-            tracker.selected_chest_opened = true
         end
 
         self.current_state = chest_state.WAITING_FOR_LOOT
@@ -347,18 +350,20 @@ local open_chests_task = {
 
     wait_for_loot = function(self)
         console.print("waiting for loot")
-        console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
-        console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
-        if self.current_chest_type == "GREATER_AFFIX" and tracker.ga_chest_opened then
+        if tracker.ga_chest_opened and not tracker.selected_chest_opened then
             console.print("Waiting GA loot based on wait loot delay.")
-            if not tracker.check_time("wait_for_loot_delay", settings.wait_loot_delay) then
+            if not tracker.check_time("wait_for_ga_loot_delay", settings.wait_loot_delay) then
                 return false
             end
+            console.print("GA chest looted")
         elseif self.current_chest_type == self.selected_chest_type and tracker.selected_chest_opened then
-            console.print("Waiting normal loot based on wait loot delay.")
-            if not tracker.check_time("wait_for_loot_delay", (settings.wait_loot_delay / 2)) then
+            console.print("Waiting selected loot based on wait loot delay.")
+            if not tracker.check_time("wait_for_normal_loot_delay", (settings.wait_loot_delay / 2)) then
                 return false
             end
+            console.print("Selected chest looted, finishing task")
+            self.current_state = chest_state.FINISHED
+            return
         end
         
         console.print("Next chest type set to: " .. self.current_chest_type)
