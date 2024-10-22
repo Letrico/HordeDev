@@ -121,7 +121,7 @@ local open_chests_task = {
     
         -- Always set self.selected_chest_type
         local chest_type_map = {"MATERIALS", "GOLD"}
-        self.selected_chest_type = chest_type_map[settings.selected_chest_type + 1]
+        self.selected_chest_type = chest_type_map[(settings.selected_chest_type or 0) + 1]
     
         -- If no aether, proceed with chest selection
         self.current_chest_index = 1
