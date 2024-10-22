@@ -46,8 +46,6 @@ local open_chests_task = {
             return false
         end
     
-        console.print("  finished_chest_looting: " .. tostring(tracker.finished_chest_looting))
-    
         return not tracker.finished_chest_looting
     end,
     
@@ -298,20 +296,6 @@ local open_chests_task = {
         console.print("Trying next chest")
         console.print("Current self.current_chest_type: " .. tostring(self.current_chest_type))
         console.print("Current self.selected_chest_type: " .. tostring(self.selected_chest_type))
-
-        -- Add check for GREATER_AFFIX chest type and full inventory
-        -- local failover_chest_type_map = {"MATERIALS", "GOLD"}
-        -- if not settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
-        --     console.print("Selected chest is GREATER_AFFIX and inventory is full, switching to failover chest type")
-        --     self.selected_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
-        --     self.current_chest_type = failover_chest_type_map[settings.failover_chest_type + 1]
-        --     self.current_state = chest_state.MOVING_TO_CHEST
-        --     return
-        -- elseif settings.salvage and self.current_chest_type == "GREATER_AFFIX" and utils.is_inventory_full() then
-        --     self.state_before_pause = self.current_state
-        --     self.current_state = chest_state.PAUSED_FOR_SALVAGE
-        --     return
-        -- end
 
         local function move_to_next_chest()
             self.current_chest_index = (self.current_chest_index or 0) + 1

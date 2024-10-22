@@ -43,6 +43,7 @@ function tracker.set_teleported_from_town(value)
 end
 
 function tracker.clear_runtime_timers()
+    console.print("Clear runtime timers")
     for _, timer in pairs(runtime_timer) do
         tracker.clear_key(timer)
     end
