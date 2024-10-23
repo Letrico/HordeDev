@@ -9,6 +9,9 @@ local function enter_horde()
         if utils.distance_to(portal) < 2 then
             console.print("Player is close enough to the portal. Interacting with the portal.")
             interact_object(portal)
+        else
+            console.print("Player is too far from the portal. Moving towards the portal")
+            pathfinder.request_move(portal)
         end
     else
         console.print("Portal Not found!")
