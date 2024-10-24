@@ -8,6 +8,7 @@ local pylons = {
     "BlisteringHordes",        -- Normal Monster Spawn Aether Events 50% Faster
     "EmpoweredElites",         -- Elite damage +25%, Aether Fiends grant +1 Aether
     "UnstoppableElites",       -- Elites are Unstoppable, Aether Fiends grant +1 Aether
+    "RagingHellfire",          -- Hellfire rains upon you, at the end of each wave spawn 1-3 Aether
     "InvigoratingHellborne",   -- Hellborne Damage +25%, Slaying Hellborne Invigorates you
     "InfernalStalker",         -- An Infernal demon has your scent, Slay it to gain +25 Aether
     "AetherRush",              -- Normal Monsters Damage +25%, Gathering Aether Increases Movement Speed
@@ -22,7 +23,6 @@ local pylons = {
     "CorruptingSpires",        -- Soulspires empower nearby foes, they also pull enemies inward
     "GreedySpires",            -- Soulspire requires 2x kills, Soulspires grant 2x Aether
     "UnstableFiends",          -- Elite Damage +25%, Aether Fiends explode and damage FOES
-    "RagingHellfire",          -- Hellfire rains upon you, at the end of each wave spawn 1-3 Aether
     "GestatingMasses",         -- Masses spawn an Aether lord on Death, Aether Lords Grant +3 Aether
     "InfernalLords"            -- Aether Lords Now Spawn, they grant +3 Aether
 }
