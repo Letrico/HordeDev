@@ -86,15 +86,26 @@ local function salvage_low_greater_affix_items()
 
     local inventory_items = local_player:get_inventory_items()
     for _, inventory_item in pairs(inventory_items) do
-        if inventory_item and not inventory_item:is_locked() then
+        if inventory_item then
+            -- Check if the item is locked
+            if inventory_item:is_locked() then
+                tracker.keep_items = tracker.keep_items + 1
+                goto continue
+            end
+
             local display_name = inventory_item:get_display_name()
             local greater_affix_count = utils.get_greater_affix_count(display_name)
-            local item_id = inventory_item:get_sno_id()
 
-            if greater_affix_count < settings.greater_affix_count and not is_uber_item(item_id) then
+            if greater_affix_count >= settings.greater_affix_count and not inventory_item:is_junk() then
+                tracker.keep_items = tracker.keep_items + 1
+                goto continue
+            end
+
+            if not affix_filter:is_uber_item(inventory_item:get_sno_id()) then
                 loot_manager.salvage_specific_item(inventory_item)
             end
         end
+        ::continue::
     end
 end
 
@@ -267,15 +278,15 @@ local town_salvage_task = {
                 console.print("Current item count: " .. item_count)
                 console.print("Current keep_items count: " .. tostring(tracker.keep_items))
                 
-                if item_count <= 1 or (settings.use_salvage_filter_toggle and tracker.keep_items == item_count) then
+                if tracker.keep_items == item_count then
                     tracker.has_salvaged = true
-                    console.print("Salvage complete, item count is 15 or less. Moving to portal")
+                    console.print("Salvage complete, item count is matching keep_items count. Moving to portal")
                     self.current_state = salvage_state.FINISHED
                 else
-                    console.print("Item count is still above 15, retrying salvage")
+                    console.print("Item count and keep_items count is mismatched, retrying salvage")
                     self.current_retries = self.current_retries + 1
                     if self.current_retries >= self.max_retries then
-                        console.print("Max retries reached numb2. Resetting task.")
+                        console.print("Max retries reached. Resetting task.")
                         self:reset()
                     else
                         self.last_salvage_time = nil  -- Reset this to allow immediate salvage on next cycle

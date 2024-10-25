@@ -53,10 +53,7 @@ local function is_objective(actor)
 
     -- Patterns that require health check
     local health_check_patterns = {
-        "Soulspire",
-        "Mass",
-        "Zombie",
-        "BSK_Structure_BonusAether"
+        "Soulspire"
     }
 
     -- Patterns that don't require health check
@@ -65,18 +62,19 @@ local function is_objective(actor)
         "MarkerLocation_BSK_Occupied",
         "S05_coredemon",
         "S05_fallen",
+        "BSK_Structure_BonusAether"
     }
-
-    -- Check patterns with health condition
-    for _, pattern in ipairs(health_check_patterns) do
-        if name:match(pattern) and health > 1 then
-            return true
-        end
-    end
 
     -- Check patterns without health condition
     for _, pattern in ipairs(no_health_check_patterns) do
         if name:match(pattern) then
+            return true
+        end
+    end
+
+    -- Check patterns with health condition
+    for _, pattern in ipairs(health_check_patterns) do
+        if name:match(pattern) and health > 1 then
             return true
         end
     end
@@ -201,7 +199,7 @@ function bomber:get_target()
         end
     end
 
-    return closest_spire or closest_hellborne or closest_mass or closest_membrane or closest_aether or closest_monster
+    return closest_hellborne or closest_mass or closest_membrane or closest_spire or closest_aether or closest_monster
 end
 
 -- Function to get the highest priority pylon from the list
