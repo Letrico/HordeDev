@@ -85,7 +85,7 @@ local max_target_distance = 120 -- Maximum distance for a new target
 local target_distance_states = {120, 40, 20, 5}
 local target_distance_index = 1
 local unstuck_target_distance = 15 -- Maximum distance for an unstuck target
-local stuck_threshold = 10      -- Seconds before the character is considered "stuck"
+local stuck_threshold = 15      -- Seconds before the character is considered "stuck"
 local last_position = nil
 local last_move_time = 0
 local last_explored_targets = {}
@@ -673,15 +673,15 @@ end
 function explorer:move_to_target()
     console.print("Moving to target")
     
-    if handle_stuck_player() then
-        -- If we've just set a temporary target, we want to move to it immediately
-        if settings.aggresive_movement then
-            move_to_target_aggresive()
-        else
-            move_to_target()
-        end
-        return
-    end
+    -- if handle_stuck_player() then
+    --     -- If we've just set a temporary target, we want to move to it immediately
+    --     if settings.aggresive_movement then
+    --         move_to_target_aggresive()
+    --     else
+    --         move_to_target()
+    --     end
+    --     return
+    -- end
 
     if settings.aggresive_movement then
         move_to_target_aggresive()
@@ -719,7 +719,7 @@ on_update(function()
     local current_core_time = get_time_since_inject()
     if current_core_time - last_call_time > 0.45 then
         last_call_time = current_core_time
-        is_player_on_quest = utils.player_on_quest(enums.quests.pit_ongoing) and settings.enabled
+        is_player_on_quest = utils.player_in_zone("S05_BSK_Prototype02") and settings.enabled
         if not is_player_on_quest then
             return
         end
@@ -728,7 +728,8 @@ on_update(function()
         local is_stuck = check_if_stuck()
         if is_stuck then
             console.print("Character was stuck. Finding new target and attempting revive")
-            target_position = find_target(false)
+            -- Set target to center position
+            target_position = vec3:new(9.204102, 8.915039, 0.000000)
             target_position = set_height_of_valid_position(target_position)
             last_move_time = os.time()
             current_path = {}
@@ -737,6 +738,9 @@ on_update(function()
             local local_player = get_local_player()
             if local_player and local_player:is_dead() then
                 revive_at_checkpoint()
+            else
+                -- Attempt to use a movement spell to the new target
+                explorer:movement_spell_to_target(target_position)
             end
         end
     end
